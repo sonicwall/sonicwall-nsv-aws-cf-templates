@@ -1,0 +1,680 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Conditions": {
+        "AllocateEip": {
+            "Fn::Equals": [
+                {
+                    "Ref": "ExistingEipAllocationId"
+                },
+                ""
+            ]
+        }
+    },
+    "Description": "SonicWall NSv CloudFormation Template to deploy NSv in a new VPC",
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "Project"
+                    },
+                    "Parameters": [
+                        "ProjectName"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "Location"
+                    },
+                    "Parameters": [
+                        "AvailabilityZone"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "Instance"
+                    },
+                    "Parameters": [
+                        "AmiId",
+                        "InstanceName",
+                        "InstanceType",
+                        "KeyPairName",
+                        "ManagementWhitelistCidr",
+                        "WanIfaceSubnetName",
+                        "WanIfaceSubnetCidr",
+                        "LanIfaceSubnetName",
+                        "LanIfaceSubnetCidr",
+                        "ExistingEipAllocationId"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "VPC"
+                    },
+                    "Parameters": [
+                        "VpcName",
+                        "VpcCidr"
+                    ]
+                }
+            ],
+            "ParameterLabels": {
+                "AmiId": {
+                    "default": "AMI"
+                },
+                "AvailabilityZone": {
+                    "default": "Availability Zone"
+                },
+                "ExistingEipAllocationId": {
+                    "default": "(Optional) Existing Elastic IP Address (EIP)"
+                },
+                "InstanceName": {
+                    "default": "Instance Name"
+                },
+                "InstanceType": {
+                    "default": "Instance Type"
+                },
+                "KeyPairName": {
+                    "default": "Key Pair"
+                },
+                "LanIfaceSubnetCidr": {
+                    "default": "LAN Interface Subnet CIDR"
+                },
+                "LanIfaceSubnetName": {
+                    "default": "LAN Interface Subnet Name"
+                },
+                "ManagementWhitelistCidr": {
+                    "default": "Allow management (ssh/http/https) from this CIDR"
+                },
+                "ProjectName": {
+                    "default": "Project Name"
+                },
+                "VpcCidr": {
+                    "default": "VPC CIDR"
+                },
+                "VpcName": {
+                    "default": "VPC Name"
+                },
+                "WanIfaceSubnetCidr": {
+                    "default": "WAN Interface Subnet CIDR"
+                },
+                "WanIfaceSubnetName": {
+                    "default": "WAN Interface Subnet Name"
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "ManagementSsh": {
+            "Description": "Management Console (SSH) to manage NSv",
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        "ssh -i ",
+                        {
+                            "Ref": "KeyPairName"
+                        },
+                        ".pem",
+                        " management@",
+                        {
+                            "Fn::GetAtt": [
+                                "NSvInstance",
+                                "PublicIp"
+                            ]
+                        }
+                    ]
+                ]
+            }
+        },
+        "ManagementUrl": {
+            "Description": "Management URL to manage NSv",
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        "https://",
+                        {
+                            "Fn::GetAtt": [
+                                "NSvInstance",
+                                "PublicIp"
+                            ]
+                        },
+                        "/",
+                        " username: admin, password: ",
+                        {
+                            "Ref": "NSvInstance"
+                        }
+                    ]
+                ]
+            }
+        }
+    },
+    "Parameters": {
+        "AmiId": {
+            "Description": "SonicWall NSv AMI ID",
+            "Type": "AWS::EC2::Image::Id"
+        },
+        "AvailabilityZone": {
+            "Description": "Select the AWS Availability Zone",
+            "Type": "AWS::EC2::AvailabilityZone::Name"
+        },
+        "ExistingEipAllocationId": {
+            "Description": "Allocation ID of an existing Elastic IP (EIP). The EIP is associated to the WAN interface of the NSv. A new EIP will be allocated if left blank",
+            "Type": "String"
+        },
+        "InstanceName": {
+            "Default": "SonicWall NSv",
+            "Description": "New NSv Instance Name",
+            "Type": "String"
+        },
+        "InstanceType": {
+            "AllowedValues": [
+                "c5.large",
+                "c5.xlarge",
+                "c5.2xlarge",
+                "c5.4xlarge"
+            ],
+            "Default": "c5.large",
+            "Description": "Select the type of instance",
+            "Type": "String"
+        },
+        "KeyPairName": {
+            "Description": "Instance Key Pair Name",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "LanIfaceSubnetCidr": {
+            "Default": "192.168.1.0/24",
+            "Description": "Enter the CIDR for the subnet",
+            "Type": "String"
+        },
+        "LanIfaceSubnetName": {
+            "Default": "NSv LAN Interface",
+            "Description": "Enter the name for the new subnet",
+            "Type": "String"
+        },
+        "ManagementWhitelistCidr": {
+            "AllowedPattern": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/([0-9]|[1-2][0-9]|3[0-2]))$",
+            "ConstraintDescription": "Must be in IPv4 CIDR notation: x.x.x.x/x",
+            "Description": "Specify the CIDR from which management access (http,https,ssh) is allowed on WAN interface. Must be in IPv4 CIDR notation: x.x.x.x/x",
+            "Type": "String"
+        },
+        "ProjectName": {
+            "Default": "SonicWall NSv",
+            "Description": "This will be in AWS resources tag",
+            "Type": "String"
+        },
+        "VpcCidr": {
+            "Default": "192.168.0.0/16",
+            "Description": "VPC CIDR",
+            "Type": "String"
+        },
+        "VpcName": {
+            "Default": "NSv VPC",
+            "Description": "New VPC Name",
+            "Type": "String"
+        },
+        "WanIfaceSubnetCidr": {
+            "Default": "192.168.0.0/24",
+            "Description": "Enter the CIDR for the subnet",
+            "Type": "String"
+        },
+        "WanIfaceSubnetName": {
+            "Default": "NSv WAN Interface",
+            "Description": "Enter the name for the new subnet",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "EipAssociation": {
+            "Properties": {
+                "AllocationId": {
+                    "Fn::If": [
+                        "AllocateEip",
+                        {
+                            "Fn::GetAtt": [
+                                "NewEip",
+                                "AllocationId"
+                            ]
+                        },
+                        {
+                            "Ref": "ExistingEipAllocationId"
+                        }
+                    ]
+                },
+                "NetworkInterfaceId": {
+                    "Ref": "NSvInstanceInterfaceWan"
+                }
+            },
+            "Type": "AWS::EC2::EIPAssociation"
+        },
+        "NSvAttachGateway": {
+            "Properties": {
+                "InternetGatewayId": {
+                    "Ref": "NSvInternetGateway"
+                },
+                "VpcId": {
+                    "Ref": "NSvVpc"
+                }
+            },
+            "Type": "AWS::EC2::VPCGatewayAttachment"
+        },
+        "NSvInstance": {
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone"
+                },
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/sda1",
+                        "Ebs": {
+                            "VolumeType": "gp2"
+                        }
+                    }
+                ],
+                "EbsOptimized": "true",
+                "ImageId": {
+                    "Ref": "AmiId"
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "KeyName": {
+                    "Ref": "KeyPairName"
+                },
+                "NetworkInterfaces": [
+                    {
+                        "DeviceIndex": 0,
+                        "NetworkInterfaceId": {
+                            "Ref": "NSvInstanceInterfaceWan"
+                        }
+                    }
+                ],
+                "SourceDestCheck": "false",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "InstanceName"
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": {
+                            "Ref": "ProjectName"
+                        }
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "NSvInstanceInterfaceLan": {
+            "Properties": {
+                "GroupSet": [
+                    {
+                        "Ref": "NSvSecGrpLan"
+                    }
+                ],
+                "SourceDestCheck": "false",
+                "SubnetId": {
+                    "Ref": "NSvSubnetLan"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "InstanceName"
+                                    },
+                                    " Interface LAN"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": {
+                            "Ref": "ProjectName"
+                        }
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::NetworkInterface"
+        },
+        "NSvInstanceInterfaceWan": {
+            "Properties": {
+                "GroupSet": [
+                    {
+                        "Ref": "NSvSecGrpWan"
+                    }
+                ],
+                "SourceDestCheck": "false",
+                "SubnetId": {
+                    "Ref": "NSvSubnetWan"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "InstanceName"
+                                    },
+                                    " Interface WAN"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": {
+                            "Ref": "ProjectName"
+                        }
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::NetworkInterface"
+        },
+        "NSvInterfaceAttachmentLan": {
+            "Properties": {
+                "DeviceIndex": 1,
+                "InstanceId": {
+                    "Ref": "NSvInstance"
+                },
+                "NetworkInterfaceId": {
+                    "Ref": "NSvInstanceInterfaceLan"
+                }
+            },
+            "Type": "AWS::EC2::NetworkInterfaceAttachment"
+        },
+        "NSvInternetGateway": {
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "VpcName"
+                                    },
+                                    " GW"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": {
+                            "Ref": "ProjectName"
+                        }
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::InternetGateway"
+        },
+        "NSvRouteLan": {
+            "DependsOn": "NSvInternetGateway",
+            "Properties": {
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "NetworkInterfaceId": {
+                    "Ref": "NSvInstanceInterfaceLan"
+                },
+                "RouteTableId": {
+                    "Ref": "NSvRouteTableLan"
+                }
+            },
+            "Type": "AWS::EC2::Route"
+        },
+        "NSvRouteTableLan": {
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "ProjectName"
+                                    },
+                                    "Route Table LAN"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": {
+                            "Ref": "ProjectName"
+                        }
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "NSvVpc"
+                }
+            },
+            "Type": "AWS::EC2::RouteTable"
+        },
+        "NSvRouteTableWan": {
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "ProjectName"
+                                    },
+                                    "Route Table WAN"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": {
+                            "Ref": "ProjectName"
+                        }
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "NSvVpc"
+                }
+            },
+            "Type": "AWS::EC2::RouteTable"
+        },
+        "NSvRouteWan": {
+            "DependsOn": "NSvInternetGateway",
+            "Properties": {
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Ref": "NSvInternetGateway"
+                },
+                "RouteTableId": {
+                    "Ref": "NSvRouteTableWan"
+                }
+            },
+            "Type": "AWS::EC2::Route"
+        },
+        "NSvSecGrpLan": {
+            "Properties": {
+                "GroupDescription": "Allow All Ingress",
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": 0,
+                        "IpProtocol": -1,
+                        "ToPort": 65535
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "NSvVpc"
+                }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "NSvSecGrpWan": {
+            "Properties": {
+                "GroupDescription": "Allow management (http/https/ssh) from Management white list CID, UDP 4500 and UDP 500 from all",
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": {
+                            "Ref": "ManagementWhitelistCidr"
+                        },
+                        "FromPort": "22",
+                        "IpProtocol": "tcp",
+                        "ToPort": "22"
+                    },
+                    {
+                        "CidrIp": {
+                            "Ref": "ManagementWhitelistCidr"
+                        },
+                        "FromPort": "443",
+                        "IpProtocol": "tcp",
+                        "ToPort": "443"
+                    },
+                    {
+                        "CidrIp": {
+                            "Ref": "ManagementWhitelistCidr"
+                        },
+                        "FromPort": "80",
+                        "IpProtocol": "tcp",
+                        "ToPort": "80"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "500",
+                        "IpProtocol": "udp",
+                        "ToPort": "500"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "4500",
+                        "IpProtocol": "udp",
+                        "ToPort": "4500"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "NSvVpc"
+                }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "NSvSubnetLan": {
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone"
+                },
+                "CidrBlock": {
+                    "Ref": "LanIfaceSubnetCidr"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "LanIfaceSubnetName"
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": {
+                            "Ref": "ProjectName"
+                        }
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "NSvVpc"
+                }
+            },
+            "Type": "AWS::EC2::Subnet"
+        },
+        "NSvSubnetLanRouteTableAssociation": {
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "NSvRouteTableLan"
+                },
+                "SubnetId": {
+                    "Ref": "NSvSubnetLan"
+                }
+            },
+            "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "NSvSubnetWan": {
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone"
+                },
+                "CidrBlock": {
+                    "Ref": "WanIfaceSubnetCidr"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "WanIfaceSubnetName"
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": {
+                            "Ref": "ProjectName"
+                        }
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "NSvVpc"
+                }
+            },
+            "Type": "AWS::EC2::Subnet"
+        },
+        "NSvSubnetWanRouteTableAssociation": {
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "NSvRouteTableWan"
+                },
+                "SubnetId": {
+                    "Ref": "NSvSubnetWan"
+                }
+            },
+            "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "NSvVpc": {
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "VpcCidr"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "VpcName"
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": {
+                            "Ref": "ProjectName"
+                        }
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::VPC"
+        },
+        "NewEip": {
+            "Condition": "AllocateEip",
+            "DependsOn": "NSvAttachGateway",
+            "Properties": {
+                "Domain": "vpc"
+            },
+            "Type": "AWS::EC2::EIP"
+        }
+    }
+}

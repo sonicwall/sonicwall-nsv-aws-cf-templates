@@ -1,0 +1,418 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Conditions": {
+        "AllocateEip": {
+            "Fn::Equals": [
+                {
+                    "Ref": "ExistingEipAllocationId"
+                },
+                ""
+            ]
+        }
+    },
+    "Description": "SonicWall NSv CloudFormation Template to deploy NSv in an existing VPC",
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "Project"
+                    },
+                    "Parameters": [
+                        "ProjectName"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "Location"
+                    },
+                    "Parameters": [
+                        "AvailabilityZone"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "Instance"
+                    },
+                    "Parameters": [
+                        "AmiId",
+                        "InstanceName",
+                        "InstanceType",
+                        "KeyPairName",
+                        "ManagementWhitelistCidr",
+                        "WanIfaceSubnetId",
+                        "LanIfaceSubnetId",
+                        "ExistingEipAllocationId"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "VPC"
+                    },
+                    "Parameters": [
+                        "VpcId"
+                    ]
+                }
+            ],
+            "ParameterLabels": {
+                "AmiId": {
+                    "default": "AMI"
+                },
+                "AvailabilityZone": {
+                    "default": "Availability Zone"
+                },
+                "ExistingEipAllocationId": {
+                    "default": "(Optional) Existing Elastic IP Address (EIP)"
+                },
+                "InstanceName": {
+                    "default": "Instance Name"
+                },
+                "InstanceType": {
+                    "default": "Instance Type"
+                },
+                "KeyPairName": {
+                    "default": "Key Pair"
+                },
+                "LanIfaceSubnetId": {
+                    "default": "LAN Interface Subnet ID "
+                },
+                "ManagementWhitelistCidr": {
+                    "default": "Allow management (ssh/http/https) from this CIDR"
+                },
+                "ProjectName": {
+                    "default": "Project Name"
+                },
+                "VpcID": {
+                    "default": "Existing VPC ID"
+                },
+                "WanIfaceSubnetId": {
+                    "default": "WAN Subnet ID"
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "ManagementSsh": {
+            "Description": "Management Console (SSH) to manage NSv",
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        "ssh -i ",
+                        {
+                            "Ref": "KeyPairName"
+                        },
+                        ".pem",
+                        " management@",
+                        {
+                            "Fn::GetAtt": [
+                                "NSvInstance",
+                                "PublicIp"
+                            ]
+                        }
+                    ]
+                ]
+            }
+        },
+        "ManagementUrl": {
+            "Description": "Management URL to manage NSv",
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        "https://",
+                        {
+                            "Fn::GetAtt": [
+                                "NSvInstance",
+                                "PublicIp"
+                            ]
+                        },
+                        "/",
+                        " username: admin, password: ",
+                        {
+                            "Ref": "NSvInstance"
+                        }
+                    ]
+                ]
+            }
+        }
+    },
+    "Parameters": {
+        "AmiId": {
+            "Description": "SonicWall NSv AMI ID",
+            "Type": "AWS::EC2::Image::Id"
+        },
+        "AvailabilityZone": {
+            "Description": "Select the AWS Availability Zone",
+            "Type": "AWS::EC2::AvailabilityZone::Name"
+        },
+        "ExistingEipAllocationId": {
+            "Description": "Allocation ID of an existing Elastic IP (EIP). The EIP is associated to the WAN interface of the NSv. A new EIP will be allocated if left blank",
+            "Type": "String"
+        },
+        "InstanceName": {
+            "Default": "SonicWall NSv",
+            "Description": "New NSv Instance Name",
+            "Type": "String"
+        },
+        "InstanceType": {
+            "AllowedValues": [
+                "c5.large",
+                "c5.xlarge",
+                "c5.2xlarge",
+                "c5.4xlarge"
+            ],
+            "Default": "c5.large",
+            "Description": "Select the type of instance",
+            "Type": "String"
+        },
+        "KeyPairName": {
+            "Description": "Instance Key Pair Name",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "LanIfaceSubnetId": {
+            "Description": "Enter LAN Subnet ID",
+            "Type": "AWS::EC2::Subnet::Id"
+        },
+        "ManagementWhitelistCidr": {
+            "AllowedPattern": "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/([0-9]|[1-2][0-9]|3[0-2]))$",
+            "ConstraintDescription": "Must be in IPv4 CIDR notation: x.x.x.x/x",
+            "Description": "Specify the CIDR from which management access (http,https,ssh) is allowed on WAN interface. Must be in IPv4 CIDR notation: x.x.x.x/x",
+            "Type": "String"
+        },
+        "ProjectName": {
+            "Default": "SonicWall NSv",
+            "Description": "This will be in AWS resources tag",
+            "Type": "String"
+        },
+        "VpcId": {
+            "Description": "Enter existing VPC to deploy NSv",
+            "Type": "AWS::EC2::VPC::Id"
+        },
+        "WanIfaceSubnetId": {
+            "Description": "Enter WAN Subnet ID",
+            "Type": "AWS::EC2::Subnet::Id"
+        }
+    },
+    "Resources": {
+        "EipAssociation": {
+            "Properties": {
+                "AllocationId": {
+                    "Fn::If": [
+                        "AllocateEip",
+                        {
+                            "Fn::GetAtt": [
+                                "NewEip",
+                                "AllocationId"
+                            ]
+                        },
+                        {
+                            "Ref": "ExistingEipAllocationId"
+                        }
+                    ]
+                },
+                "NetworkInterfaceId": {
+                    "Ref": "NSvInstanceInterfaceWan"
+                }
+            },
+            "Type": "AWS::EC2::EIPAssociation"
+        },
+        "NSvInstance": {
+            "Properties": {
+                "AvailabilityZone": {
+                    "Ref": "AvailabilityZone"
+                },
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/sda1",
+                        "Ebs": {
+                            "VolumeType": "gp2"
+                        }
+                    }
+                ],
+                "EbsOptimized": "true",
+                "ImageId": {
+                    "Ref": "AmiId"
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "KeyName": {
+                    "Ref": "KeyPairName"
+                },
+                "NetworkInterfaces": [
+                    {
+                        "DeviceIndex": 0,
+                        "NetworkInterfaceId": {
+                            "Ref": "NSvInstanceInterfaceWan"
+                        }
+                    },
+                    {
+                        "DeviceIndex": 1,
+                        "NetworkInterfaceId": {
+                            "Ref": "NSvInstanceInterfaceLan"
+                        }
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "InstanceName"
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": {
+                            "Ref": "ProjectName"
+                        }
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "NSvInstanceInterfaceLan": {
+            "Properties": {
+                "GroupSet": [
+                    {
+                        "Ref": "NSvSecGrpLan"
+                    }
+                ],
+                "SourceDestCheck": "false",
+                "SubnetId": {
+                    "Ref": "LanIfaceSubnetId"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "InstanceName"
+                                    },
+                                    " Interface LAN"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": {
+                            "Ref": "ProjectName"
+                        }
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::NetworkInterface"
+        },
+        "NSvInstanceInterfaceWan": {
+            "Properties": {
+                "GroupSet": [
+                    {
+                        "Ref": "NSvSecGrpWan"
+                    }
+                ],
+                "SourceDestCheck": "false",
+                "SubnetId": {
+                    "Ref": "WanIfaceSubnetId"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "InstanceName"
+                                    },
+                                    " Interface WAN"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Project",
+                        "Value": {
+                            "Ref": "ProjectName"
+                        }
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::NetworkInterface"
+        },
+        "NSvSecGrpLan": {
+            "Properties": {
+                "GroupDescription": "Allow All Ingress",
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": 0,
+                        "IpProtocol": -1,
+                        "ToPort": 65535
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VpcId"
+                }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "NSvSecGrpWan": {
+            "Properties": {
+                "GroupDescription": "Allow management (http/https/ssh) from Management white list CID, UDP 4500 and UDP 500 from all",
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": {
+                            "Ref": "ManagementWhitelistCidr"
+                        },
+                        "FromPort": "22",
+                        "IpProtocol": "tcp",
+                        "ToPort": "22"
+                    },
+                    {
+                        "CidrIp": {
+                            "Ref": "ManagementWhitelistCidr"
+                        },
+                        "FromPort": "443",
+                        "IpProtocol": "tcp",
+                        "ToPort": "443"
+                    },
+                    {
+                        "CidrIp": {
+                            "Ref": "ManagementWhitelistCidr"
+                        },
+                        "FromPort": "80",
+                        "IpProtocol": "tcp",
+                        "ToPort": "80"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "500",
+                        "IpProtocol": "udp",
+                        "ToPort": "500"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "4500",
+                        "IpProtocol": "udp",
+                        "ToPort": "4500"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VpcId"
+                }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "NewEip": {
+            "Condition": "AllocateEip",
+            "Properties": {
+                "Domain": "vpc"
+            },
+            "Type": "AWS::EC2::EIP"
+        }
+    }
+}
