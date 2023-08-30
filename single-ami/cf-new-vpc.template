@@ -11,6 +11,242 @@
         }
     },
     "Description": "SonicWall NSv CloudFormation Template to deploy NSv in a new VPC",
+    "Mappings": {
+        "RegionMap": {
+            "us-east-1": {
+                "SonicWallNSvPAYGR1511": "ami-076ed83a6cb9f1983",
+                "SonicWallNSvPAYGR1700": "ami-0073f48559e480e1e",
+                "SonicWallNSvPAYGR1833": "ami-03b8e762fa5a399a2",
+                "SonicWallNSvPAYGR2052": "ami-0cf950b6e70f645f1",
+                "SonicWallNSvPAYGR2267": "ami-0c94d2d85cfb7687d",
+                "SonicWallNSvR1511": "ami-02f5001b44f22efe6",
+                "SonicWallNSvR1519": "ami-0902525105a9da073",
+                "SonicWallNSvR1700": "ami-046c4da4f6246c49c",
+                "SonicWallNSvR1833": "ami-0549f9eadb5c65891",
+                "SonicWallNSvR2052": "ami-0c1a86992ff2d205e",
+                "SonicWallNSvR2267": "ami-0585a5eef4427a3da"
+            },
+            "us-east-2": {
+                "SonicWallNSvPAYGR1511": "ami-0ad9ce90071363f6c",
+                "SonicWallNSvPAYGR1700": "ami-021e9eb83af65dc11",
+                "SonicWallNSvPAYGR1833": "ami-07d9460bd5dba90b3",
+                "SonicWallNSvPAYGR2052": "ami-07e9c81ae4e879f51",
+                "SonicWallNSvPAYGR2267": "ami-0e680a271d56e2a61",
+                "SonicWallNSvR1511": "ami-0d332c158fae72772",
+                "SonicWallNSvR1519": "ami-0d4406104295911a9",
+                "SonicWallNSvR1700": "ami-0eb7320c42dda60a9",
+                "SonicWallNSvR1833": "ami-09d9c5b3389f6851f",
+                "SonicWallNSvR2052": "ami-0cb7d643da7768097",
+                "SonicWallNSvR2267": "ami-0b991ce20009ad66f"
+            },
+            "us-west-1": {
+                "SonicWallNSvPAYGR1511": "ami-0bc2c0cc1288d5bd4",
+                "SonicWallNSvPAYGR1700": "ami-0ecf6e687d41a20b1",
+                "SonicWallNSvPAYGR1833": "ami-0b10384875f0212de",
+                "SonicWallNSvPAYGR2052": "ami-0e005b76d799d1b82",
+                "SonicWallNSvPAYGR2267": "ami-0500cf379a8446a85",
+                "SonicWallNSvR1511": "ami-0e0dddc9b899d2001",
+                "SonicWallNSvR1519": "ami-0ba053f3ae8017624",
+                "SonicWallNSvR1700": "ami-0fbeae142b8212e1e",
+                "SonicWallNSvR1833": "ami-0586b7cfc6efa37f3",
+                "SonicWallNSvR2052": "ami-04ff06c78538015c4",
+                "SonicWallNSvR2267": "ami-07c8a636febffe772"
+            },
+            "us-west-2": {
+                "SonicWallNSvPAYGR1511": "ami-09f37c838367d1aab",
+                "SonicWallNSvPAYGR1700": "ami-0f6bffa9d6dbaf2d2",
+                "SonicWallNSvPAYGR1833": "ami-0f876d6ef600eec3d",
+                "SonicWallNSvPAYGR2052": "ami-05504011f04fce4f5",
+                "SonicWallNSvPAYGR2267": "ami-0c1e03d64488c493b",
+                "SonicWallNSvR1511": "ami-057bf2788114d283d",
+                "SonicWallNSvR1519": "ami-0e28256d75682964f",
+                "SonicWallNSvR1700": "ami-0444927bbb57bbffd",
+                "SonicWallNSvR1833": "ami-0c8da808130eedfc6",
+                "SonicWallNSvR2052": "ami-0422ddfba1b376bb7",
+                "SonicWallNSvR2267": "ami-0042ab6dc6aaa4d3c"
+            },
+            "ap-east-1": {
+                "SonicWallNSvR1511": "ami-0c3ce0cf16168bc6f",
+                "SonicWallNSvR1519": "ami-058866700b9b044ac",
+                "SonicWallNSvR1700": "ami-056e6aaef6c1a457d",
+                "SonicWallNSvR1833": "ami-087a64c712d7fceff",
+                "SonicWallNSvR2052": "ami-0c2d10af32491ba4c",
+                "SonicWallNSvR2267": "ami-04feb6b58ac81f141"
+            },
+            "ap-south-1": {
+                "SonicWallNSvPAYGR1511": "ami-0a3f81e86b91f2326",
+                "SonicWallNSvPAYGR1700": "ami-0b6ea792165e58b8d",
+                "SonicWallNSvPAYGR1833": "ami-00edbb7389a7e1c3b",
+                "SonicWallNSvPAYGR2052": "ami-0417609839c7669c0",
+                "SonicWallNSvPAYGR2267": "ami-027f88f26a85210f7",
+                "SonicWallNSvR1511": "ami-0eee161db55756d49",
+                "SonicWallNSvR1519": "ami-0c98f6b08b2ecd26e",
+                "SonicWallNSvR1700": "ami-0d47a350def8b46d0",
+                "SonicWallNSvR1833": "ami-02fd0ebdf806cb127",
+                "SonicWallNSvR2052": "ami-01a26f31e123368c5",
+                "SonicWallNSvR2267": "ami-0f10a337b965a067e"
+            },
+            "ap-northeast-3": {
+                "SonicWallNSvR1511": "ami-0a590e6f2550ed3b6",
+                "SonicWallNSvR1519": "ami-0a5ad5094eae8d3a6",
+                "SonicWallNSvR1700": "ami-08095c47d3423cb5f",
+                "SonicWallNSvR1833": "ami-018d75761921d608a",
+                "SonicWallNSvR2052": "ami-0904f960e505637a4",
+                "SonicWallNSvR2267": "ami-0b08d533b6b5e6a9b"
+            },
+            "ap-northeast-2": {
+                "SonicWallNSvPAYGR1511": "ami-056e83aad8a88bfd8",
+                "SonicWallNSvPAYGR1700": "ami-0556648eb2a30385c",
+                "SonicWallNSvPAYGR1833": "ami-0cbeac5f705ad0c48",
+                "SonicWallNSvPAYGR2052": "ami-059337230f4c582da",
+                "SonicWallNSvPAYGR2267": "ami-025812ff732e10bb0",
+                "SonicWallNSvR1511": "ami-02ded01eab33d965d",
+                "SonicWallNSvR1519": "ami-0448d05c2896f96ab",
+                "SonicWallNSvR1700": "ami-0feaae8fe1561266c",
+                "SonicWallNSvR1833": "ami-0d508057c326ede7c",
+                "SonicWallNSvR2052": "ami-070cdb70ec3e3ed71",
+                "SonicWallNSvR2267": "ami-088eaa292bf44dd3d"
+            },
+            "ap-southeast-1": {
+                "SonicWallNSvPAYGR1511": "ami-09ccf1d3722a1416a",
+                "SonicWallNSvPAYGR1700": "ami-0e3b48c6f845bd97c",
+                "SonicWallNSvPAYGR1833": "ami-0f87de094c60cd4f1",
+                "SonicWallNSvPAYGR2052": "ami-06f53d9b399aa434e",
+                "SonicWallNSvPAYGR2267": "ami-04c6fd2d4901c831f",
+                "SonicWallNSvR1511": "ami-01b44b2152621c38b",
+                "SonicWallNSvR1519": "ami-0e71aaaa63a557787",
+                "SonicWallNSvR1700": "ami-000d43b1a58ccce15",
+                "SonicWallNSvR1833": "ami-0cf76d1276d51c615",
+                "SonicWallNSvR2052": "ami-08fc31e28d1085513",
+                "SonicWallNSvR2267": "ami-055f2d15b1f0bb1b1"
+            },
+            "ap-southeast-2": {
+                "SonicWallNSvPAYGR1511": "ami-082168a26f9be42af",
+                "SonicWallNSvPAYGR1700": "ami-023ec6b6dea4608cb",
+                "SonicWallNSvPAYGR1833": "ami-08fc9d503b7d295bb",
+                "SonicWallNSvPAYGR2052": "ami-0c40a313e377d58b1",
+                "SonicWallNSvPAYGR2267": "ami-062bc36818758ba0c",
+                "SonicWallNSvR1511": "ami-03ea3a09c6880ab5e",
+                "SonicWallNSvR1519": "ami-0a7790b70432c9709",
+                "SonicWallNSvR1700": "ami-0d8a8b1dc838eb9fb",
+                "SonicWallNSvR1833": "ami-04bb4e3fad51cdd11",
+                "SonicWallNSvR2052": "ami-04ea33ac8e714d8a6",
+                "SonicWallNSvR2267": "ami-09656bfc44152d8de"
+            },
+            "ap-northeast-1": {
+                "SonicWallNSvPAYGR1511": "ami-0962e2e5ad841418d",
+                "SonicWallNSvPAYGR1700": "ami-0db924fc0af570497",
+                "SonicWallNSvPAYGR1833": "ami-07424db490ce13bea",
+                "SonicWallNSvPAYGR2052": "ami-049fcdb43e8b6cbd4",
+                "SonicWallNSvPAYGR2267": "ami-0f322f854c4e956e9",
+                "SonicWallNSvR1511": "ami-07897032df7e21c85",
+                "SonicWallNSvR1519": "ami-0099b2a3bb9b0c386",
+                "SonicWallNSvR1700": "ami-08723dd96c276f99e",
+                "SonicWallNSvR1833": "ami-00c3a1dcee81f402b",
+                "SonicWallNSvR2052": "ami-069463ee392f5b260",
+                "SonicWallNSvR2267": "ami-03758cc3a64725012"
+            },
+            "ca-central-1": {
+                "SonicWallNSvPAYGR1511": "ami-03fd6e8707d6221ac",
+                "SonicWallNSvPAYGR1700": "ami-030530b16525e2490",
+                "SonicWallNSvPAYGR1833": "ami-03b0aaaba421f157b",
+                "SonicWallNSvPAYGR2052": "ami-0e0727ebe09da3972",
+                "SonicWallNSvPAYGR2267": "ami-0a96f49b68f3dbbb0",
+                "SonicWallNSvR1511": "ami-08f74974145576202",
+                "SonicWallNSvR1519": "ami-026155002f091abe9",
+                "SonicWallNSvR1700": "ami-0fcdf6f58bf6aa51e",
+                "SonicWallNSvR1833": "ami-018a6d751a461412a",
+                "SonicWallNSvR2052": "ami-08c8428439898d73e",
+                "SonicWallNSvR2267": "ami-0e354299bace75baf"
+            },
+            "eu-central-1": {
+                "SonicWallNSvPAYGR1511": "ami-07ceab85ef206e756",
+                "SonicWallNSvPAYGR1700": "ami-022129bf64f6ef8fb",
+                "SonicWallNSvPAYGR1833": "ami-05be89eea25d79eb0",
+                "SonicWallNSvPAYGR2052": "ami-0f60170994fabc566",
+                "SonicWallNSvPAYGR2267": "ami-0479311f9037c128a",
+                "SonicWallNSvR1511": "ami-0f887a624ea29f518",
+                "SonicWallNSvR1519": "ami-03e5f6fe96132a8d8",
+                "SonicWallNSvR1700": "ami-02e3a97d166ca4e45",
+                "SonicWallNSvR1833": "ami-022d24d5d38322aec",
+                "SonicWallNSvR2052": "ami-068128718eaccf876",
+                "SonicWallNSvR2267": "ami-094abcc50af646032"
+            },
+            "eu-west-1": {
+                "SonicWallNSvPAYGR1511": "ami-055dc7f26ab38e352",
+                "SonicWallNSvPAYGR1700": "ami-09dc491f4ec2f9035",
+                "SonicWallNSvPAYGR1833": "ami-0a9b197be8a767d0f",
+                "SonicWallNSvPAYGR2052": "ami-0a4add4926c4cf601",
+                "SonicWallNSvPAYGR2267": "ami-0369375344688a644",
+                "SonicWallNSvR1511": "ami-0011bceec2dc9a617",
+                "SonicWallNSvR1519": "ami-03de32d7fbf4d9012",
+                "SonicWallNSvR1700": "ami-07676b4bc439d92b7",
+                "SonicWallNSvR1833": "ami-04f9e39591ec2eded",
+                "SonicWallNSvR2052": "ami-05ae86b8d5a4a43cd",
+                "SonicWallNSvR2267": "ami-03537947915b17013"
+            },
+            "eu-west-2": {
+                "SonicWallNSvPAYGR1511": "ami-09adb8263b7b12907",
+                "SonicWallNSvPAYGR1700": "ami-08daafc8c77ab6009",
+                "SonicWallNSvPAYGR1833": "ami-05c631e695e44c594",
+                "SonicWallNSvPAYGR2052": "ami-02b3d3087822d185c",
+                "SonicWallNSvPAYGR2267": "ami-0ece1b7724f926c0e",
+                "SonicWallNSvR1511": "ami-0a9f6111488c7fd39",
+                "SonicWallNSvR1519": "ami-0347e7762590c8b30",
+                "SonicWallNSvR1700": "ami-03fe579377649b2be",
+                "SonicWallNSvR1833": "ami-0e90ed4efe158eca3",
+                "SonicWallNSvR2052": "ami-0e5635e39c46954df",
+                "SonicWallNSvR2267": "ami-05c580e873233438e"
+            },
+            "eu-west-3": {
+                "SonicWallNSvPAYGR1511": "ami-02e9cbbe2a99459a0",
+                "SonicWallNSvPAYGR1700": "ami-0cdb8f9c3886e4ccd",
+                "SonicWallNSvPAYGR1833": "ami-002b8288562031ae9",
+                "SonicWallNSvPAYGR2052": "ami-0213b4b509561b117",
+                "SonicWallNSvPAYGR2267": "ami-0fa051aa187575305",
+                "SonicWallNSvR1511": "ami-0c1da26b260576f06",
+                "SonicWallNSvR1519": "ami-04e74559a815f9893",
+                "SonicWallNSvR1700": "ami-000a904540fa9c162",
+                "SonicWallNSvR1833": "ami-02f792beabfa4a6a2",
+                "SonicWallNSvR2052": "ami-0d39388480e6740d2",
+                "SonicWallNSvR2267": "ami-09906c6bc21c31a71"
+            },
+            "eu-north-1": {
+                "SonicWallNSvPAYGR1511": "ami-09e29b6121fdb086e",
+                "SonicWallNSvPAYGR1700": "ami-0f52ad711d6b41ac1",
+                "SonicWallNSvPAYGR1833": "ami-090efa23221396320",
+                "SonicWallNSvPAYGR2052": "ami-09f381c5081792b17",
+                "SonicWallNSvPAYGR2267": "ami-0741b9d46a04effb3",
+                "SonicWallNSvR1511": "ami-02e2874dcd6a82d86",
+                "SonicWallNSvR1519": "ami-0e3114a1e6d11743f",
+                "SonicWallNSvR1700": "ami-03fa605cc237eb5bd",
+                "SonicWallNSvR1833": "ami-0d4fad93de090b130",
+                "SonicWallNSvR2052": "ami-04ec80cebef689999",
+                "SonicWallNSvR2267": "ami-0685fc5574aef210f"
+            },
+            "me-south-1": {
+                "SonicWallNSvR1511": "ami-04caf24d4102cbf4b",
+                "SonicWallNSvR1519": "ami-0d2325d4ff8435db0",
+                "SonicWallNSvR1700": "ami-0c01a9f55b8b22e88",
+                "SonicWallNSvR1833": "ami-06afd26f8191f9f51",
+                "SonicWallNSvR2052": "ami-09d67c1e103eb28e7",
+                "SonicWallNSvR2267": "ami-083f2c69f6825b453"
+            },
+            "sa-east-1": {
+                "SonicWallNSvPAYGR1511": "ami-0b1e727062e3dc9e2",
+                "SonicWallNSvPAYGR1700": "ami-0b9fd3a2d2ac73a67",
+                "SonicWallNSvPAYGR1833": "ami-0b5c9533ce33d7c19",
+                "SonicWallNSvPAYGR2052": "ami-0ff06bc8aaf3b264b",
+                "SonicWallNSvPAYGR2267": "ami-08a3565446365d86e",
+                "SonicWallNSvR1511": "ami-0c07ba557aacf7c04",
+                "SonicWallNSvR1519": "ami-01d442a71e9c14646",
+                "SonicWallNSvR1700": "ami-0101e7e0d93261941",
+                "SonicWallNSvR1833": "ami-0e73659f19513c411",
+                "SonicWallNSvR2052": "ami-075e48eec81bd3168",
+                "SonicWallNSvR2267": "ami-0e861a47d5e85c379"
+            }
+        }
+    },
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [
@@ -152,7 +388,8 @@
     "Parameters": {
         "AmiId": {
             "Description": "SonicWall NSv AMI ID",
-            "Type": "AWS::EC2::Image::Id"
+            "AllowedValues": ["SonicWallNSvPAYGR1511", "SonicWallNSvPAYGR1700", "SonicWallNSvPAYGR1833", "SonicWallNSvPAYGR2052", "SonicWallNSvPAYGR2267", "SonicWallNSvR1511", "SonicWallNSvR1519", "SonicWallNSvR1700", "SonicWallNSvR1833", "SonicWallNSvR2052", "SonicWallNSvR2267"],
+            "Type": "String"
         },
         "AvailabilityZone": {
             "Description": "Select the AWS Availability Zone",
@@ -273,7 +510,7 @@
                 ],
                 "EbsOptimized": "true",
                 "ImageId": {
-                    "Ref": "AmiId"
+                    "Fn::FindInMap": ["RegionMap", { "Ref": "AWS::Region" }, {"Ref": "AmiId"}]
                 },
                 "InstanceType": {
                     "Ref": "InstanceType"
