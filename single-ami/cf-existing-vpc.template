@@ -215,6 +215,7 @@
                     "Ref": "NSvInstanceInterfaceWan"
                 }
             },
+            "DependsOn": "NSvInstance",
             "Type": "AWS::EC2::EIPAssociation"
         },
         "NSvInstance": {
